@@ -44,29 +44,11 @@ Write queries to perform the following operations.
 **Test these in Graphiql and paste them into a readme in your project folder.** If I launch your project I should be able to test all of your queries. (add queries for testing)
 
 - List all todos
-
-
-
 - Add a new todo: name: "Complete the final assessment"
-
-
-
 - Show the: "Completed final assessment" todo 
-
-
-
 - Complete the: "Complete final assessment" todo
-
-
-
 - Show all completed todos
-
-
-
 - Show all not completed todos
-
-
-
 
 ### Stretch Challenge: Subscriptions
 
@@ -110,49 +92,4 @@ Test the following queries and add them to your readme:
 - Sort todos by priority
 
 ## Submit your work 
-
 Submit your completed work on GradeScope.
-
-<!-- 
-
-### Define a Schema
-
-Enum Race 
-- Human
-- Dwarf
-- Elf
-
-Type Character
-- name
-- race
-- power
-- speed
-- hp
-
-Type Party 
-- name 
-- characters []
-
-Query 
-- getParty returns Party
-- 
-
-Mutation 
-- createParty 
-	- parameters name
-	- returns Party
-- creatCharacter returns Character
-- addToParty return character
-
-### Create a server 
-
-- Setup GraphQL server 
-- Define a resolver for your schema
-
-### Write Queries 
-
-Define the following queries
-
-- get a party 
-	- show 
- -->

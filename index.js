@@ -1,4 +1,5 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer, gql, PubSub } = require('apollo-server');
+const pubsub = new PubSub();
 
 const typeDefs = gql`
     type Todo {
@@ -8,43 +9,66 @@ const typeDefs = gql`
         id: Int!
     }
 
-	type Query {
-		getAllTodos: [Todo!]!
-        getTodo: Todo!
-	}
+    type Query {
+        todos(completed: Boolean): [Todo!]!
+        todo(id: Int!): Todo!
+    }
 
-    type Mutations {
-        addTodo(name: String!, id: Int!): Todo!
+    type Mutation {
+        addTodo(name: String!): Todo!
+        completeTodo(id: Int!): Todo!
+    }
+
+    type Subscription {
+        newTodo: Todo!
+        completedTodo: Todo!
     }`
 
-const data = [
-    { name: "first todo", date: new Date(), completed: false, id: 0 }
-]
+const allTodos = []
+const completedTodos = []
 
 const resolvers = {
     Query: {
-        getAllTodos: () => {
-            return data
-        },
-        getTodo: () => {
-            return data[0]
-        },
-        getCompletedTodos: () => {
-            return data.filter(done => data.completed == true)
+        todos: (_, {completed}) => {
+            if (completed == true) {
+                return completedTodos
+            } else if (completed == false) {
+                let incomplete = []
+                allTodos.forEach(todo => {
+                    if (!todo.completed) {
+                        incomplete.push(todo)
+                    }
+                })
+                return incomplete
+            }
+
+            return allTodos
+        }, 
+        todo: (_, {id}) => {
+            return allTodos[id]
         }
     },
-    Mutations: {
-        addTodo: (name) => {
-            const todo = { name, date: new Date(), completed: false, id: data.findIndex() + 1 }
-            data.push(todo)
+    Mutation: {
+        addTodo: (_, {name, priority = 'low'}) => {
+            const todo = {name: name, completed: false, id: todosArr.length, date: new Date(), priority: priority}
+            todosArr.push(todo)
+            pubsub.publish('NEW_TODO', { newTodo: todo }) // Publish!
             return todo
         },
-        completedTodo: (id) => {
-            if (!data[id]) {
-                throw new Error('No todo exists at ' + id);
-            }
-            data[id].completed = true
-            return data[id]
+        completeTodo: (_, {id}) => {
+            todosArr[id].completed = true
+            const todo = todosArr[id]
+            completedTodos.push(todo)
+            pubsub.publish('COMPLETED_TODO', { completedTodo: todo }) // Publish!
+            return todo
+        },
+    },
+    Subscription: {
+        newTodo: {
+            subscribe: () => pubsub.asyncIterator('NEW_TODO')
+        },
+        completedTodo: {
+            subscribe: () => pubsub.asyncIterator('COMPLETED_TODO')
         }
     }
 }
